@@ -96,7 +96,8 @@ Vagrant.configure('2') do |config|
         shell.inline = localhost_domain
       end
 
-      bare.vm.provision 'ansible' do |ansible|
+      bare.vm.provision 'ansible_local' do |ansible|
+        ansible.install_mode = "pip3"
         ansible.playbook = 'bare/playbook.yml'
         ansible.extra_vars = ansible_extra_vars
         ansible.version = ansible_version
@@ -128,7 +129,8 @@ Vagrant.configure('2') do |config|
       shell.inline = localhost_domain
     end
 
-    bare.vm.provision 'ansible' do |ansible|
+    bare.vm.provision 'ansible_local' do |ansible|
+      ansible.install_mode = "pip3"
       ansible.playbook = 'bare/playbook.yml'
       ansible.version = ansible_version
       ansible.extra_vars = ansible_extra_vars
@@ -165,7 +167,8 @@ Vagrant.configure('2') do |config|
       shell.inline = localhost_domain
     end
 
-    bare.vm.provision 'ansible' do |ansible|
+    bare.vm.provision 'ansible_local' do |ansible|
+      ansible.install_mode = "pip3"
       ansible.playbook = 'bare/playbook.yml'
       ansible.version = ansible_version
       ansible.extra_vars = ansible_extra_vars
