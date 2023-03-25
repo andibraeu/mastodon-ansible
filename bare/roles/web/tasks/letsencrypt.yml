@@ -2,30 +2,54 @@
 - stat: path=/etc/letsencrypt/live/{{ mastodon_host }}/fullchain.pem
   register: letsencrypt_cert
 
-- name: Copy letsencrypt nginx config
-  template: 
-    src: ../files/nginx/letsencrypt.conf.j2
-    dest: /etc/nginx/sites-available/mastodon.conf
-  when: not letsencrypt_cert.stat.exists
-  
-- name: Symlink enabled site
+#Certbot instructions taken from official EFF instructions
+#https://certbot.eff.org/instructions?ws=nginx&os=pip
+
+- name: Install Certbot in virtualenv
+  ansible.builtin.pip:
+    name: 
+      - certbot
+      - certbot-nginx
+    virtualenv: /opt/certbot
+
+- name: "Symlink certbot package from python venv to /usr/bin"
   file:
-    src: "/etc/nginx/sites-available/mastodon.conf"
-    dest: "/etc/nginx/sites-enabled/mastodon.conf"
+    src: "/opt/certbot/bin/certbot"
+    dest: "/usr/bin/certbot"
     state: link
+
+#We need to start NGINX first to populate all configs and let the certbot nginx module do its job
+- name: "Start NGINX service"
+  become: yes
+  #Workaround for "Interactive authentication required" issue
+  become_user: root
+  service: "name={{ item }} state=started"
+  with_items:
+  - nginx
+  when:
+    - not letsencrypt_cert.stat.exists
+
+- name: Obtain Letsencrypt Certificate via Certbot
+#  command: certbot 'certonly -n --webroot -d {{ mastodon_host }} -w {{ mastodon_home }}/{{ mastodon_path }}/public/ --email "{{ letsencrypt_email }}" --agree-tos {{ certbot_extra_param}}'
+  command: 'certbot certonly --nginx --preferred-challenges http -n -d {{ mastodon_host }} -m "{{ letsencrypt_email }}" --agree-tos {{ certbot_extra_param }}'
   when: not letsencrypt_cert.stat.exists
 
-- name: Reload nginx
-  command: "systemctl reload nginx"
 
-- name: Install letsencrypt cert
-  command: letsencrypt certonly -n --webroot -d {{ mastodon_host }} -w {{ mastodon_home }}/{{ mastodon_path }}/public/ --email "webmaster@{{ mastodon_host }}" --agree-tos
-  when: not letsencrypt_cert.stat.exists
-
-- name: Letsencrypt Job
+#When using Certbot from pip package, we need to schedule a cron or expect failures
+#Based on EFF Certbot guidance
+- name: Schedule Certbot Certificate Renewal Job
   cron:
-    name: "letsencrypt renew"
+    name: "certbot renew"
     minute: "15"
     hour: "0"
-    job: "letsencrypt renew && service nginx reload"
+    job: "/opt/certbot/bin/python -c 'import random; import time; time.sleep(random.random() * 3600)' && sudo certbot renew -q && service nginx reload"
+
+#Based on EFF Certbot guidance
+- name: Schedule Certbot Autoupdate Job
+  cron:
+    name: "certbot renew"
+    minute: "0"
+    hour: "0"
+    day: "1"
+    job: "/opt/certbot/bin/pip install --upgrade certbot certbot-nginx"
 

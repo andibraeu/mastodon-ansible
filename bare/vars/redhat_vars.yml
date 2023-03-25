@@ -36,6 +36,7 @@ packages:
   - package: "dnf-automatic"
   - package: "yarn"
   - package: "zlib-devel"
+  - package: "python3-virtualenv"
 
 postgres:
   packages:
