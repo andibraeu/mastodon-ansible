@@ -88,6 +88,16 @@
   with_items:
   - nginx
   when:
+    - ansible_os_family == "Debian"
+    - not letsencrypt_cert.stat.exists
+  
+- name: Symlink enabled site on Debian systems
+  file:
+    src: "/etc/nginx/sites-available/mastodon.conf"
+    dest: "/etc/nginx/sites-enabled/mastodon.conf"
+    state: link
+  when:
+    - ansible_os_family == "Debian"
     - not letsencrypt_cert.stat.exists
     - use_legacy_certbot | bool == false
 

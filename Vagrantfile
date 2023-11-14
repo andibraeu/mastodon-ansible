@@ -102,6 +102,7 @@ Vagrant.configure('2') do |config|
         ansible.extra_vars = ansible_extra_vars
         ansible.version = ansible_version
         ansible.verbose = true
+        ansible.skip_tags = 'letsencrypt'
       end
 
       bare.vm.provision 'shell' do |shell|
@@ -135,6 +136,7 @@ Vagrant.configure('2') do |config|
       ansible.version = ansible_version
       ansible.extra_vars = ansible_extra_vars
       ansible.verbose = true
+      ansible.skip_tags = 'letsencrypt'
     end
 
     #We can't have two shell.inline for some reason or the first one won't run
@@ -173,6 +175,7 @@ Vagrant.configure('2') do |config|
       ansible.version = ansible_version
       ansible.extra_vars = ansible_extra_vars
       ansible.verbose = true
+      ansible.skip_tags = 'letsencrypt'
     end
 
     #We can't have two shell.inline for some reason or the first one won't run

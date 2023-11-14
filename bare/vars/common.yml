@@ -18,8 +18,6 @@ disable_letsencrypt: "false"
 #Format: "webmaster@mastodon.local"
 letsencrypt_email: ""
 #Use HTTP only for Vagrant testing or for reverse proxy purposes.
-#With recent changes to Mastodon, Puma server now enforces HTTPS, and unless you do config
-#changes, you will end up in a redirect loop with nginx going to HTTP and puma going to HTTPS over and over again
 use_http: "false"
 #Nginx will listen to every IP/Domain with this directive. Useful for reverse proxy or testing only.
 nginx_catch_all: "false"
@@ -30,5 +28,3 @@ use_legacy_certbot: "true"
 autoupdate_certbot: "false"
 self_signed_cert_location: /etc/ssl/certs
 self_signed_key_location: /etc/ssl/private
-#If you want to append any extra parameters to let's encrypt's certbot
-certbot_extra_param: ''
